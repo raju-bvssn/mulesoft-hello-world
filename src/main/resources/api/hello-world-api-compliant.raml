@@ -1,0 +1,518 @@
+#%RAML 1.0
+title: Hello World API
+version: v1
+baseUri: https://mule-hello-world-2aofst.rajrd4-2.usa-e1.cloudhub.io/api/{version}
+mediaType: application/json
+protocols: [HTTPS]
+
+description: |
+  A simple Hello World API demonstrating MuleSoft best practices with multi-language greeting capabilities.
+  This API is fully compliant with Anypoint Best Practices and Authentication Security Best Practices rulesets.
+
+documentation:
+  - title: Overview
+    content: |
+      # Hello World API
+      
+      A production-ready REST API demonstrating MuleSoft API-first development with comprehensive security and best practices compliance.
+      
+      ## Features
+      - Multi-language greeting support (English, Spanish, French)
+      - Client ID enforcement security
+      - Comprehensive error handling
+      - Health monitoring endpoint
+      - ISO 8601 datetime standards
+      
+      ## Security
+      This API requires client_id and client_secret headers for authentication.
+      Contact your API administrator to obtain credentials.
+      
+  - title: Authentication
+    content: |
+      # Authentication
+      
+      This API uses Client ID Enforcement for security.
+      
+      **Required Headers:**
+      - `client_id`: Your application's client ID
+      - `client_secret`: Your application's client secret
+      
+      **Example:**
+      ```
+      curl -X GET https://mule-hello-world-2aofst.rajrd4-2.usa-e1.cloudhub.io/api/v1/hello \
+        -H "client_id: your-client-id" \
+        -H "client_secret: your-client-secret"
+      ```
+      
+  - title: Rate Limiting
+    content: |
+      # Rate Limiting
+      
+      Standard CloudHub rate limits apply:
+      - Development: 100 requests per minute
+      - Production: Contact administrator for custom limits
+      
+  - title: Support
+    content: |
+      # Support
+      
+      - GitHub: https://github.com/raju-bvssn/mulesoft-hello-world
+      - API Console: https://mule-hello-world-2aofst.rajrd4-2.usa-e1.cloudhub.io/console
+
+securitySchemes:
+  client-id-enforcement:
+    type: x-client-id-enforcement
+    description: |
+      Client ID Enforcement requires passing client_id and client_secret as headers.
+      This ensures only registered applications can access the API.
+    describedBy:
+      headers:
+        client_id:
+          type: string
+          description: Client ID provided during application registration
+          required: true
+          example: "abc123client"
+        client_secret:
+          type: string
+          description: Client Secret provided during application registration (keep confidential)
+          required: true
+          example: "xyz789secret"
+      responses:
+        401:
+          description: Unauthorized - Missing or invalid client credentials
+          body:
+            application/json:
+              type: ErrorResponse
+              example: |
+                {
+                  "error": "Unauthorized",
+                  "message": "Invalid client credentials",
+                  "timestamp": "2025-10-30T15:30:00Z",
+                  "correlationId": "abc-123-def"
+                }
+        403:
+          description: Forbidden - Valid credentials but insufficient permissions
+          body:
+            application/json:
+              type: ErrorResponse
+              example: |
+                {
+                  "error": "Forbidden",
+                  "message": "Insufficient permissions to access this resource",
+                  "timestamp": "2025-10-30T15:30:00Z",
+                  "correlationId": "abc-123-def"
+                }
+
+securedBy: [client-id-enforcement]
+
+types:
+  HelloResponse:
+    description: Standard greeting response object
+    type: object
+    properties:
+      message:
+        type: string
+        description: The greeting message content
+        required: true
+        example: "Hello World from MuleSoft!"
+      timestamp:
+        type: datetime
+        description: ISO 8601 timestamp when the response was generated
+        required: true
+        example: "2025-10-30T15:30:00Z"
+      version:
+        type: string
+        description: API version identifier
+        required: true
+        example: "v1"
+    example: |
+      {
+        "message": "Hello World from MuleSoft!",
+        "timestamp": "2025-10-30T15:30:00Z",
+        "version": "v1"
+      }
+
+  PersonalizedHelloResponse:
+    description: Personalized greeting response with name
+    type: object
+    properties:
+      message:
+        type: string
+        description: Personalized greeting message including the provided name
+        required: true
+        example: "Hello, John!"
+      timestamp:
+        type: datetime
+        description: ISO 8601 timestamp when the response was generated
+        required: true
+        example: "2025-10-30T15:30:00Z"
+      version:
+        type: string
+        description: API version identifier
+        required: true
+        example: "v1"
+    example: |
+      {
+        "message": "Hello, John!",
+        "timestamp": "2025-10-30T15:30:00Z",
+        "version": "v1"
+      }
+
+  GreetingRequest:
+    description: Request body for creating a custom greeting
+    type: object
+    properties:
+      name:
+        type: string
+        description: Name of the person to greet (1-100 characters)
+        required: true
+        minLength: 1
+        maxLength: 100
+        example: "Jane"
+      greeting:
+        type: string
+        description: Optional custom greeting word (defaults based on language)
+        required: false
+        minLength: 1
+        maxLength: 50
+        example: "Welcome"
+      language:
+        type: string
+        description: Language code for the greeting (en=English, es=Spanish, fr=French)
+        required: false
+        enum: [en, es, fr]
+        default: en
+        example: "en"
+    example: |
+      {
+        "name": "Jane",
+        "greeting": "Welcome",
+        "language": "en"
+      }
+
+  CustomGreetingResponse:
+    description: Custom greeting response with language information
+    type: object
+    properties:
+      message:
+        type: string
+        description: Custom greeting message in the requested language
+        required: true
+        example: "Hello, Jane!"
+      language:
+        type: string
+        description: Language code used for the greeting
+        required: true
+        example: "en"
+      timestamp:
+        type: datetime
+        description: ISO 8601 timestamp when the response was generated
+        required: true
+        example: "2025-10-30T15:30:00Z"
+      version:
+        type: string
+        description: API version identifier
+        required: true
+        example: "v1"
+    example: |
+      {
+        "message": "Hello, Jane!",
+        "language": "en",
+        "timestamp": "2025-10-30T15:30:00Z",
+        "version": "v1"
+      }
+
+  HealthResponse:
+    description: Health check status response
+    type: object
+    properties:
+      status:
+        type: string
+        description: Current health status of the API (UP or DOWN)
+        required: true
+        enum: [UP, DOWN]
+        example: "UP"
+      timestamp:
+        type: datetime
+        description: ISO 8601 timestamp of the health check
+        required: true
+        example: "2025-10-30T15:30:00Z"
+      version:
+        type: string
+        description: API version identifier
+        required: true
+        example: "v1"
+    example: |
+      {
+        "status": "UP",
+        "timestamp": "2025-10-30T15:30:00Z",
+        "version": "v1"
+      }
+
+  ErrorResponse:
+    description: Standard error response format for all error conditions
+    type: object
+    properties:
+      error:
+        type: string
+        description: Error type or category
+        required: true
+        example: "Bad Request"
+      message:
+        type: string
+        description: Human-readable error message explaining what went wrong
+        required: true
+        example: "Name is required"
+      timestamp:
+        type: datetime
+        description: ISO 8601 timestamp when the error occurred
+        required: true
+        example: "2025-10-30T15:30:00Z"
+      correlationId:
+        type: string
+        description: Unique identifier for troubleshooting and log correlation
+        required: false
+        example: "abc-123-def-456"
+    example: |
+      {
+        "error": "Bad Request",
+        "message": "Name is required",
+        "timestamp": "2025-10-30T15:30:00Z",
+        "correlationId": "abc-123-def-456"
+      }
+
+/hello:
+  displayName: Hello Endpoint
+  description: Returns a simple hello world greeting message
+  get:
+    displayName: Get Simple Hello
+    operationId: getSimpleHello
+    description: |
+      Retrieves a simple "Hello World" greeting message.
+      This is the most basic endpoint for testing API connectivity.
+    responses:
+      200:
+        description: Successfully returned hello world message
+        headers:
+          Content-Type:
+            description: Response content type (always application/json)
+            type: string
+            example: application/json
+          X-Correlation-ID:
+            description: Unique request identifier for troubleshooting and log correlation
+            type: string
+            example: "abc-123-def-456"
+        body:
+          application/json:
+            type: HelloResponse
+      400:
+        description: Bad Request - Malformed request
+        headers:
+          Content-Type:
+            description: Response content type
+            type: string
+            example: application/json
+        body:
+          application/json:
+            type: ErrorResponse
+      401:
+        description: Unauthorized - Missing or invalid client credentials
+        body:
+          application/json:
+            type: ErrorResponse
+      403:
+        description: Forbidden - Valid credentials but insufficient permissions
+        body:
+          application/json:
+            type: ErrorResponse
+      404:
+        description: Not Found - Requested resource does not exist
+        body:
+          application/json:
+            type: ErrorResponse
+      500:
+        description: Internal Server Error - Unexpected server error occurred
+        body:
+          application/json:
+            type: ErrorResponse
+
+  /{name}:
+    displayName: Personalized Hello Endpoint
+    description: Returns a personalized greeting for the specified name
+    uriParameters:
+      name:
+        type: string
+        description: |
+          The name of the person to greet.
+          Must be between 1 and 50 characters.
+          Special characters and Unicode are supported.
+        required: true
+        minLength: 1
+        maxLength: 50
+        example: "John"
+    get:
+      displayName: Get Personalized Hello
+      operationId: getPersonalizedHello
+      description: |
+        Retrieves a personalized greeting message for the specified name.
+        The name parameter is included in the greeting response.
+      responses:
+        200:
+          description: Successfully returned personalized greeting
+          headers:
+            Content-Type:
+              description: Response content type (always application/json)
+              type: string
+              example: application/json
+            X-Correlation-ID:
+              description: Unique request identifier for troubleshooting
+              type: string
+              example: "abc-123-def-456"
+          body:
+            application/json:
+              type: PersonalizedHelloResponse
+        400:
+          description: Bad Request - Invalid name parameter (too long, empty, etc.)
+          body:
+            application/json:
+              type: ErrorResponse
+              example: |
+                {
+                  "error": "Bad Request",
+                  "message": "Name must be between 1 and 50 characters",
+                  "timestamp": "2025-10-30T15:30:00Z"
+                }
+        401:
+          description: Unauthorized - Missing or invalid client credentials
+          body:
+            application/json:
+              type: ErrorResponse
+        403:
+          description: Forbidden - Valid credentials but insufficient permissions
+          body:
+            application/json:
+              type: ErrorResponse
+        404:
+          description: Not Found - Endpoint does not exist
+          body:
+            application/json:
+              type: ErrorResponse
+        500:
+          description: Internal Server Error
+          body:
+            application/json:
+              type: ErrorResponse
+
+/greet:
+  displayName: Custom Greeting Endpoint
+  description: Creates a custom greeting with optional language and greeting style
+  post:
+    displayName: Create Custom Greeting
+    operationId: createCustomGreeting
+    description: |
+      Creates a custom greeting message based on the provided name, optional greeting word, and language preference.
+      Supports English (en), Spanish (es), and French (fr) languages.
+    body:
+      application/json:
+        type: GreetingRequest
+    responses:
+      200:
+        description: Successfully created custom greeting
+        headers:
+          Content-Type:
+            description: Response content type (always application/json)
+            type: string
+            example: application/json
+          X-Correlation-ID:
+            description: Unique request identifier for troubleshooting
+            type: string
+            example: "abc-123-def-456"
+        body:
+          application/json:
+            type: CustomGreetingResponse
+      400:
+        description: |
+          Bad Request - Invalid input data.
+          Possible reasons:
+          - Missing required 'name' field
+          - Name too long (>100 characters)
+          - Invalid language code
+          - Malformed JSON
+        body:
+          application/json:
+            type: ErrorResponse
+            example: |
+              {
+                "error": "Bad Request",
+                "message": "Name is required",
+                "timestamp": "2025-10-30T15:30:00Z"
+              }
+      401:
+        description: Unauthorized - Missing or invalid client credentials
+        body:
+          application/json:
+            type: ErrorResponse
+      403:
+        description: Forbidden - Valid credentials but insufficient permissions
+        body:
+          application/json:
+            type: ErrorResponse
+      415:
+        description: Unsupported Media Type - Content-Type must be application/json
+        body:
+          application/json:
+            type: ErrorResponse
+            example: |
+              {
+                "error": "Unsupported Media Type",
+                "message": "Content-Type must be application/json",
+                "timestamp": "2025-10-30T15:30:00Z"
+              }
+      500:
+        description: Internal Server Error - Unexpected server error occurred
+        body:
+          application/json:
+            type: ErrorResponse
+
+/health:
+  displayName: Health Check Endpoint
+  description: Health check endpoint for monitoring and load balancer probes
+  get:
+    displayName: Get Health Status
+    operationId: getHealthStatus
+    description: |
+      Checks the operational health status of the API.
+      Returns 200 with status "UP" when the API is healthy and ready to accept requests.
+      Useful for Kubernetes liveness probes, load balancer health checks, and monitoring systems.
+    securedBy: []
+    responses:
+      200:
+        description: API is healthy and operational
+        headers:
+          Content-Type:
+            description: Response content type (always application/json)
+            type: string
+            example: application/json
+          Cache-Control:
+            description: Caching directive (health checks should not be cached)
+            type: string
+            example: "no-cache, no-store, must-revalidate"
+          X-Correlation-ID:
+            description: Unique request identifier
+            type: string
+            example: "abc-123-def-456"
+        body:
+          application/json:
+            type: HealthResponse
+      500:
+        description: Internal Server Error - API is not healthy
+        body:
+          application/json:
+            type: ErrorResponse
+            example: |
+              {
+                "error": "Service Unavailable",
+                "message": "API health check failed",
+                "timestamp": "2025-10-30T15:30:00Z"
+              }
+
