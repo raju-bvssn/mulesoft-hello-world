@@ -1,0 +1,13 @@
+{
+  "name": "Hello World API",
+  "description": "A simple Hello World REST API specification demonstrating basic greeting endpoints with customizable messages.",
+  "contactName": "API Team",
+  "contactEmail": "api-team@example.com",
+  "type": "rest-api",
+  "tags": ["api", "hello-world", "rest", "greeting"],
+  "categories": ["API specifications"],
+  "fields": {
+    "visualizer": "enabled"
+  }
+}
+

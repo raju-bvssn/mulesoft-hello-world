@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit"
+      xmlns:http="http://www.mulesoft.org/schema/mule/http"
+      xmlns="http://www.mulesoft.org/schema/mule/core"
+      xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd">
+
+    <!-- HTTP Listener Configuration -->
+    <http:listener-config name="hello-world-api-httpListenerConfig">
+        <http:listener-connection host="0.0.0.0" port="8081" />
+    </http:listener-config>
+
+    <!-- APIkit Configuration -->
+    <apikit:config name="hello-world-api-config" 
+                   api="resource::d7699a02-16e5-43d5-ae1c-875f3a9196e0:hello-world-api:1.0.0:raml:zip:hello-world-api.raml" 
+                   outboundHeadersMapName="outboundHeaders" 
+                   httpStatusVarName="httpStatus" />
+
+    <!-- Main API Flow -->
+    <flow name="hello-world-api-main">
+        <http:listener config-ref="hello-world-api-httpListenerConfig" 
+                      path="/api/*" 
+                      doc:name="HTTP Listener">
+            <http:response statusCode="#[vars.httpStatus default 200]">
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:response>
+            <http:error-response statusCode="#[vars.httpStatus default 500]">
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:error-response>
+        </http:listener>
+        
+        <apikit:router config-ref="hello-world-api-config" 
+                      doc:name="APIkit Router" />
+        
+        <error-handler>
+            <on-error-propagate type="APIKIT:BAD_REQUEST">
+                <set-payload value='#[output application/json --- {"error": "Bad Request", "message": error.description}]' 
+                           doc:name="Set Error Payload" />
+                <set-variable variableName="httpStatus" value="400" doc:name="Set HTTP Status" />
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:NOT_FOUND">
+                <set-payload value='#[output application/json --- {"error": "Not Found", "message": "Resource not found"}]' 
+                           doc:name="Set Error Payload" />
+                <set-variable variableName="httpStatus" value="404" doc:name="Set HTTP Status" />
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:METHOD_NOT_ALLOWED">
+                <set-payload value='#[output application/json --- {"error": "Method Not Allowed", "message": "Method not allowed"}]' 
+                           doc:name="Set Error Payload" />
+                <set-variable variableName="httpStatus" value="405" doc:name="Set HTTP Status" />
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:NOT_ACCEPTABLE">
+                <set-payload value='#[output application/json --- {"error": "Not Acceptable", "message": "Not acceptable"}]' 
+                           doc:name="Set Error Payload" />
+                <set-variable variableName="httpStatus" value="406" doc:name="Set HTTP Status" />
+            </on-error-propagate>
+        </error-handler>
+    </flow>
+
+    <!-- GET /hello Implementation -->
+    <flow name="get:\hello:hello-world-api-config">
+        <set-payload value='#[output application/json --- {
+  "message": "Hello World from MuleSoft!",
+  "timestamp": now(),
+  "version": "v1"
+}]' 
+                    doc:name="Set Hello Response" 
+                    mimeType="application/json" />
+        <logger level="INFO" 
+               doc:name="Logger" 
+               message="GET /hello endpoint called" />
+    </flow>
+
+    <!-- GET /hello/{name} Implementation -->
+    <flow name="get:\hello\(name):hello-world-api-config">
+        <set-payload value='#[output application/json --- {
+  "message": "Hello, " ++ attributes.uriParams.name ++ "!",
+  "timestamp": now(),
+  "version": "v1"
+}]' 
+                    doc:name="Set Personalized Hello Response" 
+                    mimeType="application/json" />
+        <logger level="INFO" 
+               doc:name="Logger" 
+               message="#['GET /hello/' ++ attributes.uriParams.name ++ ' endpoint called']" />
+    </flow>
+
+    <!-- POST /greet Implementation -->
+    <flow name="post:\greet:application\json:hello-world-api-config">
+        <set-payload value='#[output application/json
+var greetingMap = {
+  en: payload.greeting default "Hello",
+  es: payload.greeting default "Hola",
+  fr: payload.greeting default "Bonjour"
+}
+var selectedGreeting = greetingMap[payload.language default "en"]
+---
+{
+  "message": selectedGreeting ++ ", " ++ payload.name ++ "!",
+  "language": payload.language default "en",
+  "timestamp": now(),
+  "version": "v1"
+}]' 
+                    doc:name="Set Custom Greeting Response" 
+                    mimeType="application/json" />
+        <logger level="INFO" 
+               doc:name="Logger" 
+               message="POST /greet endpoint called" />
+    </flow>
+
+    <!-- GET /health Implementation -->
+    <flow name="get:\health:hello-world-api-config">
+        <set-payload value='#[output application/json --- {
+  "status": "UP",
+  "timestamp": now(),
+  "version": "v1"
+}]' 
+                    doc:name="Set Health Response" 
+                    mimeType="application/json" />
+        <logger level="INFO" 
+               doc:name="Logger" 
+               message="GET /health endpoint called" />
+    </flow>
+
+    <!-- APIkit Console Flow (for API documentation) -->
+    <flow name="hello-world-api-console">
+        <http:listener config-ref="hello-world-api-httpListenerConfig" 
+                      path="/console/*" 
+                      doc:name="HTTP Listener" />
+        <apikit:console config-ref="hello-world-api-config" 
+                       doc:name="APIkit Console" />
+    </flow>
+
+</mule>
