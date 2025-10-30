@@ -1,7 +1,7 @@
 #%RAML 1.0
 title: Hello World API
 version: v1
-baseUri: https://mule-hello-world-2aofst.rajrd4-2.usa-e1.cloudhub.io/api/{version}
+baseUri: https://mule-hello-world-2aofst.rajrd4-2.usa-e1.cloudhub.io/api/v1
 mediaType: application/json
 protocols: [HTTPS]
 
@@ -316,21 +316,41 @@ types:
             type: ErrorResponse
       401:
         description: Unauthorized - Missing or invalid client credentials
+        headers:
+          Content-Type:
+            description: Response content type
+            type: string
+            example: application/json
         body:
           application/json:
             type: ErrorResponse
       403:
         description: Forbidden - Valid credentials but insufficient permissions
+        headers:
+          Content-Type:
+            description: Response content type
+            type: string
+            example: application/json
         body:
           application/json:
             type: ErrorResponse
       404:
         description: Not Found - Requested resource does not exist
+        headers:
+          Content-Type:
+            description: Response content type
+            type: string
+            example: application/json
         body:
           application/json:
             type: ErrorResponse
       500:
         description: Internal Server Error - Unexpected server error occurred
+        headers:
+          Content-Type:
+            description: Response content type
+            type: string
+            example: application/json
         body:
           application/json:
             type: ErrorResponse
@@ -446,16 +466,31 @@ types:
               }
       401:
         description: Unauthorized - Missing or invalid client credentials
+        headers:
+          Content-Type:
+            description: Response content type
+            type: string
+            example: application/json
         body:
           application/json:
             type: ErrorResponse
       403:
         description: Forbidden - Valid credentials but insufficient permissions
+        headers:
+          Content-Type:
+            description: Response content type
+            type: string
+            example: application/json
         body:
           application/json:
             type: ErrorResponse
       415:
         description: Unsupported Media Type - Content-Type must be application/json
+        headers:
+          Content-Type:
+            description: Response content type
+            type: string
+            example: application/json
         body:
           application/json:
             type: ErrorResponse
@@ -467,6 +502,11 @@ types:
               }
       500:
         description: Internal Server Error - Unexpected server error occurred
+        headers:
+          Content-Type:
+            description: Response content type
+            type: string
+            example: application/json
         body:
           application/json:
             type: ErrorResponse
@@ -480,7 +520,7 @@ types:
       Checks the operational health status of the API.
       Returns 200 with status "UP" when the API is healthy and ready to accept requests.
       Useful for Kubernetes liveness probes, load balancer health checks, and monitoring systems.
-    securedBy: []
+    securedBy: [null]
     responses:
       200:
         description: API is healthy and operational
@@ -502,6 +542,11 @@ types:
             type: HealthResponse
       500:
         description: Internal Server Error - API is not healthy
+        headers:
+          Content-Type:
+            description: Response content type
+            type: string
+            example: application/json
         body:
           application/json:
             type: ErrorResponse
