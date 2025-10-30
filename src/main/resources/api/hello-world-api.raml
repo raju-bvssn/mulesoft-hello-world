@@ -80,6 +80,11 @@ securitySchemes:
       responses:
         401:
           description: Unauthorized - Missing or invalid client credentials
+          headers:
+            Content-Type:
+              description: Response content type
+              type: string
+              example: application/json
           body:
             application/json:
               type: ErrorResponse
@@ -92,6 +97,11 @@ securitySchemes:
                 }
         403:
           description: Forbidden - Valid credentials but insufficient permissions
+          headers:
+            Content-Type:
+              description: Response content type
+              type: string
+              example: application/json
           body:
             application/json:
               type: ErrorResponse
@@ -455,6 +465,11 @@ types:
           - Name too long (>100 characters)
           - Invalid language code
           - Malformed JSON
+        headers:
+          Content-Type:
+            description: Response content type
+            type: string
+            example: application/json
         body:
           application/json:
             type: ErrorResponse
