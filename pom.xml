@@ -15,14 +15,14 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <app.runtime>4.4.0</app.runtime>
-        <mule.maven.plugin.version>4.0.0</mule.maven.plugin.version>
+        <app.runtime>4.9.10</app.runtime>
+        <mule.maven.plugin.version>4.2.0</mule.maven.plugin.version>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         
         <!-- CloudHub 2.0 Deployment Properties -->
-        <cloudhub2.environment>dev</cloudhub2.environment>
-        <cloudhub2.businessGroup>your-business-group</cloudhub2.businessGroup>
+        <cloudhub2.environment>Sandbox</cloudhub2.environment>
+        <cloudhub2.businessGroup>d7699a02-16e5-43d5-ae1c-875f3a9196e0</cloudhub2.businessGroup>
         <cloudhub2.region>us-east-1</cloudhub2.region>
         <cloudhub2.replicas>1</cloudhub2.replicas>
         <cloudhub2.vCores>0.1</cloudhub2.vCores>
@@ -46,19 +46,29 @@
                         <uri>https://anypoint.mulesoft.com</uri>
                         <provider>MC</provider>
                         <environment>${cloudhub2.environment}</environment>
-                        <target>Cloudhub-US-East-1</target>
+                        <target>Cloudhub-US-East-2</target>
                         <muleVersion>${app.runtime}</muleVersion>
                         <applicationName>mulesoft-hello-world-dev</applicationName>
                         <replicas>${cloudhub2.replicas}</replicas>
                         <vCores>${cloudhub2.vCores}</vCores>
                         <businessGroupId>${cloudhub2.businessGroup}</businessGroupId>
-                        <deploymentTimeout>600000</deploymentTimeout>
+                        <deploymentTimeout>1200000</deploymentTimeout>
                         <server>anypoint-exchange</server>
+                        <skipDeploymentVerification>false</skipDeploymentVerification>
                     </cloudhub2Deployment>
                 </configuration>
             </plugin>
         </plugins>
     </build>
+
+    <distributionManagement>
+        <repository>
+            <id>anypoint-exchange-v3</id>
+            <name>Anypoint Exchange</name>
+            <url>https://maven.anypoint.mulesoft.com/api/v3/organizations/d7699a02-16e5-43d5-ae1c-875f3a9196e0/maven</url>
+            <layout>default</layout>
+        </repository>
+    </distributionManagement>
 
     <dependencies>
         <dependency>
