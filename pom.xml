@@ -19,6 +19,13 @@
         <mule.maven.plugin.version>4.0.0</mule.maven.plugin.version>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
+        
+        <!-- CloudHub 2.0 Deployment Properties -->
+        <cloudhub2.environment>dev</cloudhub2.environment>
+        <cloudhub2.businessGroup>your-business-group</cloudhub2.businessGroup>
+        <cloudhub2.region>us-east-1</cloudhub2.region>
+        <cloudhub2.replicas>1</cloudhub2.replicas>
+        <cloudhub2.vCores>0.1</cloudhub2.vCores>
     </properties>
 
     <build>
@@ -35,6 +42,19 @@
                 <extensions>true</extensions>
                 <configuration>
                     <classifier>mule-application</classifier>
+                    <cloudhub2Deployment>
+                        <uri>https://anypoint.mulesoft.com</uri>
+                        <provider>MC</provider>
+                        <environment>${cloudhub2.environment}</environment>
+                        <target>Cloudhub-US-East-1</target>
+                        <muleVersion>${app.runtime}</muleVersion>
+                        <applicationName>mulesoft-hello-world-dev</applicationName>
+                        <replicas>${cloudhub2.replicas}</replicas>
+                        <vCores>${cloudhub2.vCores}</vCores>
+                        <businessGroupId>${cloudhub2.businessGroup}</businessGroupId>
+                        <deploymentTimeout>600000</deploymentTimeout>
+                        <server>anypoint-exchange</server>
+                    </cloudhub2Deployment>
                 </configuration>
             </plugin>
         </plugins>
