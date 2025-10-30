@@ -37,24 +37,85 @@ http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/m
         
         <error-handler>
             <on-error-propagate type="APIKIT:BAD_REQUEST">
-                <set-payload value='#[output application/json --- {"error": "Bad Request", "message": error.description}]' 
+                <set-payload value='#[output application/json --- {
+                    "error": "Bad Request",
+                    "message": error.description default "Invalid request format",
+                    "timestamp": now(),
+                    "correlationId": correlationId
+                }]' 
                            doc:name="Set Error Payload" />
                 <set-variable variableName="httpStatus" value="400" doc:name="Set HTTP Status" />
+                <set-variable variableName="outboundHeaders" 
+                             value='#[{"Content-Type": "application/json", "X-Correlation-ID": correlationId}]'
+                             doc:name="Set Error Headers" />
             </on-error-propagate>
             <on-error-propagate type="APIKIT:NOT_FOUND">
-                <set-payload value='#[output application/json --- {"error": "Not Found", "message": "Resource not found"}]' 
+                <set-payload value='#[output application/json --- {
+                    "error": "Not Found",
+                    "message": "The requested resource does not exist",
+                    "timestamp": now(),
+                    "correlationId": correlationId
+                }]' 
                            doc:name="Set Error Payload" />
                 <set-variable variableName="httpStatus" value="404" doc:name="Set HTTP Status" />
+                <set-variable variableName="outboundHeaders" 
+                             value='#[{"Content-Type": "application/json", "X-Correlation-ID": correlationId}]'
+                             doc:name="Set Error Headers" />
             </on-error-propagate>
             <on-error-propagate type="APIKIT:METHOD_NOT_ALLOWED">
-                <set-payload value='#[output application/json --- {"error": "Method Not Allowed", "message": "Method not allowed"}]' 
+                <set-payload value='#[output application/json --- {
+                    "error": "Method Not Allowed",
+                    "message": "The HTTP method is not supported for this resource",
+                    "timestamp": now(),
+                    "correlationId": correlationId
+                }]' 
                            doc:name="Set Error Payload" />
                 <set-variable variableName="httpStatus" value="405" doc:name="Set HTTP Status" />
+                <set-variable variableName="outboundHeaders" 
+                             value='#[{"Content-Type": "application/json", "X-Correlation-ID": correlationId}]'
+                             doc:name="Set Error Headers" />
             </on-error-propagate>
             <on-error-propagate type="APIKIT:NOT_ACCEPTABLE">
-                <set-payload value='#[output application/json --- {"error": "Not Acceptable", "message": "Not acceptable"}]' 
+                <set-payload value='#[output application/json --- {
+                    "error": "Not Acceptable",
+                    "message": "The requested content type is not supported",
+                    "timestamp": now(),
+                    "correlationId": correlationId
+                }]' 
                            doc:name="Set Error Payload" />
                 <set-variable variableName="httpStatus" value="406" doc:name="Set HTTP Status" />
+                <set-variable variableName="outboundHeaders" 
+                             value='#[{"Content-Type": "application/json", "X-Correlation-ID": correlationId}]'
+                             doc:name="Set Error Headers" />
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:UNSUPPORTED_MEDIA_TYPE">
+                <set-payload value='#[output application/json --- {
+                    "error": "Unsupported Media Type",
+                    "message": "The Content-Type of the request is not supported",
+                    "timestamp": now(),
+                    "correlationId": correlationId
+                }]' 
+                           doc:name="Set Error Payload" />
+                <set-variable variableName="httpStatus" value="415" doc:name="Set HTTP Status" />
+                <set-variable variableName="outboundHeaders" 
+                             value='#[{"Content-Type": "application/json", "X-Correlation-ID": correlationId}]'
+                             doc:name="Set Error Headers" />
+            </on-error-propagate>
+            <on-error-propagate type="ANY">
+                <set-payload value='#[output application/json --- {
+                    "error": "Internal Server Error",
+                    "message": error.description default "An unexpected error occurred",
+                    "timestamp": now(),
+                    "correlationId": correlationId
+                }]' 
+                           doc:name="Set Error Payload" />
+                <set-variable variableName="httpStatus" value="500" doc:name="Set HTTP Status" />
+                <set-variable variableName="outboundHeaders" 
+                             value='#[{"Content-Type": "application/json", "X-Correlation-ID": correlationId}]'
+                             doc:name="Set Error Headers" />
+                <logger level="ERROR" 
+                       doc:name="Log Error" 
+                       message='#["Error occurred - Correlation ID: " ++ correlationId ++ ", Error: " ++ error.description]' />
             </on-error-propagate>
         </error-handler>
     </flow>
@@ -68,9 +129,12 @@ http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/m
 }]' 
                     doc:name="Set Hello Response" 
                     mimeType="application/json" />
+        <set-variable variableName="outboundHeaders" 
+                     value='#[{"Content-Type": "application/json", "X-Correlation-ID": correlationId}]'
+                     doc:name="Set Response Headers" />
         <logger level="INFO" 
                doc:name="Logger" 
-               message="GET /hello endpoint called" />
+               message='#["GET /hello endpoint called - Correlation ID: " ++ correlationId]' />
     </flow>
 
     <!-- GET /hello/{name} Implementation -->
@@ -82,9 +146,12 @@ http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/m
 }]' 
                     doc:name="Set Personalized Hello Response" 
                     mimeType="application/json" />
+        <set-variable variableName="outboundHeaders" 
+                     value='#[{"Content-Type": "application/json", "X-Correlation-ID": correlationId}]'
+                     doc:name="Set Response Headers" />
         <logger level="INFO" 
                doc:name="Logger" 
-               message="#['GET /hello/' ++ attributes.uriParams.name ++ ' endpoint called']" />
+               message='#["GET /hello/" ++ attributes.uriParams.name ++ " endpoint called - Correlation ID: " ++ correlationId]' />
     </flow>
 
     <!-- POST /greet Implementation -->
@@ -105,9 +172,12 @@ var selectedGreeting = greetingMap[payload.language default "en"]
 }]' 
                     doc:name="Set Custom Greeting Response" 
                     mimeType="application/json" />
+        <set-variable variableName="outboundHeaders" 
+                     value='#[{"Content-Type": "application/json", "X-Correlation-ID": correlationId}]'
+                     doc:name="Set Response Headers" />
         <logger level="INFO" 
                doc:name="Logger" 
-               message="POST /greet endpoint called" />
+               message='#["POST /greet endpoint called - Correlation ID: " ++ correlationId]' />
     </flow>
 
     <!-- GET /health Implementation -->
@@ -119,9 +189,12 @@ var selectedGreeting = greetingMap[payload.language default "en"]
 }]' 
                     doc:name="Set Health Response" 
                     mimeType="application/json" />
+        <set-variable variableName="outboundHeaders" 
+                     value='#[{"Content-Type": "application/json", "X-Correlation-ID": correlationId, "Cache-Control": "no-cache, no-store, must-revalidate"}]'
+                     doc:name="Set Response Headers" />
         <logger level="INFO" 
                doc:name="Logger" 
-               message="GET /health endpoint called" />
+               message='#["GET /health endpoint called - Correlation ID: " ++ correlationId]' />
     </flow>
 
     <!-- APIkit Console Flow (for API documentation) -->

@@ -1,0 +1,176 @@
+#%RAML 1.0
+title: Hello World API
+version: v1
+baseUri: https://api.example.com/api/{version}
+mediaType: application/json
+
+documentation:
+  - title: Overview
+    content: |
+      A simple Hello World API that demonstrates basic REST endpoints in MuleSoft.
+      This API provides greeting functionality with customizable messages.
+
+/hello:
+  displayName: Hello Endpoint
+  description: Returns a simple hello world greeting
+  get:
+    description: Get a hello world message
+    responses:
+      200:
+        description: Successfully returned hello message
+        body:
+          application/json:
+            example: |
+              {
+                "message": "Hello World from MuleSoft!",
+                "timestamp": "2025-10-30T15:30:00Z",
+                "version": "v1"
+              }
+            type: object
+            properties:
+              message:
+                type: string
+                description: The greeting message
+                example: "Hello World from MuleSoft!"
+              timestamp:
+                type: datetime
+                description: The time the message was generated
+                example: "2025-10-30T15:30:00Z"
+              version:
+                type: string
+                description: The API version
+                example: "v1"
+
+/hello/{name}:
+  displayName: Personalized Hello Endpoint
+  description: Returns a personalized greeting
+  uriParameters:
+    name:
+      type: string
+      description: The name to greet
+      example: "John"
+      minLength: 1
+      maxLength: 50
+  get:
+    description: Get a personalized hello message
+    responses:
+      200:
+        description: Successfully returned personalized greeting
+        body:
+          application/json:
+            example: |
+              {
+                "message": "Hello, John!",
+                "timestamp": "2025-10-30T15:30:00Z",
+                "version": "v1"
+              }
+            type: object
+            properties:
+              message:
+                type: string
+                description: The personalized greeting message
+                example: "Hello, John!"
+              timestamp:
+                type: datetime
+                description: The time the message was generated
+              version:
+                type: string
+                description: The API version
+
+/greet:
+  displayName: Custom Greeting Endpoint
+  description: Create a custom greeting with optional parameters
+  post:
+    description: Create a custom greeting message
+    body:
+      application/json:
+        example: |
+          {
+            "name": "Jane",
+            "greeting": "Welcome",
+            "language": "en"
+          }
+        type: object
+        properties:
+          name:
+            type: string
+            description: Name of the person to greet
+            required: true
+            example: "Jane"
+          greeting:
+            type: string
+            description: Type of greeting, defaults to Hello
+            required: false
+            example: "Welcome"
+          language:
+            type: string
+            description: Language code (en, es, fr)
+            required: false
+            example: "en"
+            enum: [en, es, fr]
+    responses:
+      200:
+        description: Successfully created custom greeting
+        body:
+          application/json:
+            example: |
+              {
+                "message": "Welcome, Jane!",
+                "language": "en",
+                "timestamp": "2025-10-30T15:30:00Z",
+                "version": "v1"
+              }
+            type: object
+            properties:
+              message:
+                type: string
+                description: The custom greeting message
+              language:
+                type: string
+                description: Language used for greeting
+              timestamp:
+                type: datetime
+                description: The time the message was generated
+              version:
+                type: string
+                description: The API version
+      400:
+        description: Invalid request
+        body:
+          application/json:
+            example: |
+              {
+                "error": "Bad Request",
+                "message": "Name is required",
+                "timestamp": "2025-10-30T15:30:00Z"
+              }
+
+/health:
+  displayName: Health Check
+  description: Health check endpoint for monitoring
+  get:
+    description: Check API health status
+    responses:
+      200:
+        description: API is healthy
+        body:
+          application/json:
+            example: |
+              {
+                "status": "UP",
+                "timestamp": "2025-10-30T15:30:00Z",
+                "version": "v1"
+              }
+            type: object
+            properties:
+              status:
+                type: string
+                description: Health status
+                example: "UP"
+              timestamp:
+                type: datetime
+                description: Health check timestamp
+              version:
+                type: string
+                description: API version
+
